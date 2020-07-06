@@ -24,10 +24,22 @@
   (let [{len ::d/len} fmeta]
     (write-str! stream (subs data 0 len))))
 
+(defn- write-array-prefix [stream prefix value]
+  (cond
+    (= prefix ::d/i8) (b/write-byte! stream value)
+    (= prefix ::d/i16) (b/write-int16! stream value)
+    (= prefix ::d/i32) (b/write-int32! stream value)))
+
 (defn- process-item! [stream fmeta data f]
   (let [{rank ::d/rank} fmeta]
-    (if (nil? rank) (f stream fmeta data)
-      (run! #(f stream fmeta %) (take rank data)))))
+    (if (nil? rank) (f stream fmeta data) ;;data is a single value
+      (let [datalen (count data) ;;data is an array
+            pfx (if (keyword? rank) rank nil)
+            speclen (if (integer? rank) rank datalen)]
+        (write-array-prefix stream pfx datalen)
+        (if (not= datalen speclen) (throw (Exception. "Array len do not match spec")))
+        (run! #(f stream fmeta %) data)))))
+    
 
 (defn- dispatch-item! [stream item data]
   (let [[_ ftype fmeta] item]

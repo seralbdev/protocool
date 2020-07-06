@@ -20,6 +20,23 @@
         data (b/seal! bs)]
     (t/is (= (seq data) [72 105 87 111 114 108 100 33]) true)))
 
+(t/deftest process-strs
+  (let [bs (b/create)
+        pseq [["F1" ::d/str {::d/rank 3  ::d/len 1}]]
+        data [["a" "b" "c"]]
+        _ (enc/write! bs pseq data)
+        data (b/seal! bs)]
+    (t/is (= (seq data) [97 98 99]) true)))
+
+(t/deftest process-strs-dyn
+  (let [bs (b/create)
+        pseq [["F1" ::d/str {::d/rank ::d/i8  ::d/len 1}]]
+        data [["a" "b" "c"]]
+        _ (enc/write! bs pseq data)
+        data (b/seal! bs)]
+    (t/is (= (seq data) [3 97 98 99]) true)))
+
+
 (t/deftest process-i8
   (let [bs (b/create)
         pseq [["F1" ::d/i8]]
