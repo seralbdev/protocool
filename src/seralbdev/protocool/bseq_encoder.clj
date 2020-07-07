@@ -3,6 +3,9 @@
    [seralbdev.protocool.base :as b]
    [seralbdev.protocool.bseq :as d]))
 
+(defn- write-padding! [stream padlen]
+  (b/write-bytes! stream (byte-array padlen) 0 padlen))
+
 (defn- write-prefix! [stream prefix value]
   (cond
     (= prefix ::d/u8) (b/write-byte! stream value)
@@ -21,10 +24,9 @@
 
 (defn- process-fixlen-str! [stream maxlen str]
   (let [strlen (count str)
-        padlen (if (> maxlen strlen) (- maxlen strlen) 0)
-        paddta (byte-array padlen)]
+        padlen (if (> maxlen strlen) (- maxlen strlen) 0)]
     (write-str! stream str)
-    (b/write-bytes! stream paddta 0 padlen)))
+    (write-padding! stream padlen)))
 
 (defn- process-varlen-str! [stream data]
   (write-str! stream data)
@@ -47,6 +49,10 @@
         (if (not= datalen speclen) (throw (Exception. "Array len do not match spec")))
         (run! #(f stream fmeta %) data)))))
 
+(defn- process-bool! [stream fmeta data]
+  (let [value (if data 1 0)]
+    (b/write-byte! stream value)))
+
 (defn- dispatch-item! [stream item data]
   (let [[_ ftype fmeta] item]
     (cond
@@ -56,8 +62,21 @@
       (= ftype ::d/i64) (process-item! stream fmeta data #(b/write-int64! %1 %3))
       (= ftype ::d/r32) (process-item! stream fmeta data #(b/write-real32! %1 %3))
       (= ftype ::d/r64) (process-item! stream fmeta data #(b/write-real64! %1 %3))
-      (= ftype ::d/str) (process-item! stream fmeta data process-str!))))
+      (= ftype ::d/str) (process-item! stream fmeta data process-str!)
+      (= ftype ::d/bool) (process-item! stream fmeta data process-bool!))))
+
+
+(defn get-specdata-pairs [pseq data]
+  (loop [pairs '()
+         pendingpseq pseq
+         pendingdata data]
+    (if (empty? pendingpseq) (reverse pairs)
+        (let [pseqitem (first pendingpseq)
+              [_ type] pseqitem
+              dataitem (if (= type ::d/padding) nil (first pendingdata))
+              restdata (if (= type ::d/padding) pendingdata (rest pendingdata))]
+          (recur (conj pairs pseqitem dataitem) (rest pendingpseq) restdata)))))
 
 (defn write! [stream pseq data]
-  (let [pairs (partition 2 (interleave pseq data))]
+  (let [pairs (partition 2 (get-specdata-pairs pseq data))]
     (run! #(dispatch-item! stream (first %) (last %)) pairs)))

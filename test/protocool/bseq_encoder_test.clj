@@ -28,8 +28,6 @@
         data (b/seal! bs)]
     (t/is (= (seq data) [72 105 87 111 114 108 100 33 0 0]) true)))
 
-
-
 (t/deftest process-i8
   (let [bs (b/create)
         pseq [["F1" ::d/i8]]
@@ -53,6 +51,14 @@
         _ (enc/write! bs pseq data)
         data (b/seal! bs)]
     (t/is (= (seq data) [0 69]) true)))
+
+(t/deftest process-i16-array
+  (let [bs (b/create)
+        pseq [["F1" ::d/i16 {::d/rank 3}]]
+        data [[69 70 71]]
+        _ (enc/write! bs pseq data)
+        data (b/seal! bs)]
+    (t/is (= (seq data) [0 69 0 70 0 71]) true)))
 
 (t/deftest process-i32
   (let [bs (b/create)
@@ -89,3 +95,15 @@
         rbs (b/wrap-bytearray data)
         value (b/read-real64! rbs)]
     (t/is (and (> value 69.70) (< value 69.72)))))
+
+(t/deftest process-bool
+  (let [bs (b/create)
+        pseq [["F1" ::d/bool]]
+        data [true]
+        _ (enc/write! bs pseq data)
+        data (b/seal! bs)
+        rbs (b/wrap-bytearray data)
+        value (b/read-byte! rbs)]
+    (t/is (= value 1))))
+
+
