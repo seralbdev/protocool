@@ -3,32 +3,39 @@
    [seralbdev.protocool.base :as b]
    [seralbdev.protocool.bseq :as d]))
 
-(defn- write-str! [stream value]
-  (let [bdata (.getBytes value)
-        len (count bdata)]
-    (b/write-bytes! stream bdata 0 len)))
-
-(defn- write-pstr! [stream pfx value]
-  (let [len (count value)]
-    (cond
-      (= pfx ::d/i8) (b/write-byte! stream len)
-      (= pfx ::d/i16) (b/write-int16! stream len)
-      (= pfx ::d/i32) (b/write-int32! stream len))
-    (write-str! stream value)))
-
-(defn- process-pstr! [stream fmeta data]
-  (let [{pfx ::d/pfx} fmeta]
-    (write-pstr! stream pfx data)))
-
-(defn- process-str! [stream fmeta data]
-  (let [{len ::d/len} fmeta]
-    (write-str! stream (subs data 0 len))))
-
-(defn- write-array-prefix [stream prefix value]
+(defn- write-prefix! [stream prefix value]
   (cond
     (= prefix ::d/i8) (b/write-byte! stream value)
     (= prefix ::d/i16) (b/write-int16! stream value)
     (= prefix ::d/i32) (b/write-int32! stream value)))
+
+(defn- write-str! [stream str]
+  (let [bdata (.getBytes str)
+        len (count str)]
+    (b/write-bytes! stream bdata 0 len)))
+
+(defn- process-pfx-str! [stream prefix str]
+  (let [len (count str)]
+    (write-prefix! stream prefix len)
+    (write-str! stream str)))
+
+(defn- process-fixlen-str! [stream maxlen str]
+  (let [strlen (count str)
+        padlen (if (> maxlen strlen) (- maxlen strlen) 0)
+        paddta (byte-array padlen)]
+    (write-str! stream str)
+    (b/write-bytes! stream paddta 0 padlen)))
+
+(defn- process-varlen-str! [stream data]
+  (write-str! stream data)
+  (b/write-byte! stream 0))
+
+(defn- process-str! [stream fmeta data]
+  (let [{pfx ::d/pfx len ::d/len} fmeta]
+    (cond
+      (some? pfx) (process-pfx-str! stream pfx data)
+      (some? len) (process-fixlen-str! stream len data)
+      :else (process-varlen-str! stream data))))
 
 (defn- process-item! [stream fmeta data f]
   (let [{rank ::d/rank} fmeta]
@@ -36,7 +43,7 @@
       (let [datalen (count data) ;;data is an array
             pfx (if (keyword? rank) rank nil)
             speclen (if (integer? rank) rank datalen)]
-        (write-array-prefix stream pfx datalen)
+        (write-prefix! stream pfx datalen)
         (if (not= datalen speclen) (throw (Exception. "Array len do not match spec")))
         (run! #(f stream fmeta %) data)))))
     
@@ -50,8 +57,7 @@
       (= ftype ::d/i64) (process-item! stream fmeta data #(b/write-int64! %1 %3))
       (= ftype ::d/r32) (process-item! stream fmeta data #(b/write-real32! %1 %3))
       (= ftype ::d/r64) (process-item! stream fmeta data #(b/write-real64! %1 %3))
-      (= ftype ::d/str) (process-item! stream fmeta data process-str!)
-      (= ftype ::d/pstr) (process-item! stream fmeta data process-pstr!))))
+      (= ftype ::d/str) (process-item! stream fmeta data process-str!))))
 
 (defn write! [stream pseq data]
   (let [pairs (partition 2 (interleave pseq data))]
