@@ -14,7 +14,7 @@
 
 (t/deftest process-prefix-str
   (let [bs (b/create)
-        pseq [["F1" ::d/str {::d/pfx ::d/i16}]]
+        pseq [["F1" ::d/str {::d/pfx ::d/u16}]]
         data ["HiWorld!"]
         _ (enc/write! bs pseq data)
         data (b/seal! bs)]

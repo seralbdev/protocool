@@ -5,9 +5,9 @@
 
 (defn- write-prefix! [stream prefix value]
   (cond
-    (= prefix ::d/i8) (b/write-byte! stream value)
-    (= prefix ::d/i16) (b/write-int16! stream value)
-    (= prefix ::d/i32) (b/write-int32! stream value)))
+    (= prefix ::d/u8) (b/write-byte! stream value)
+    (= prefix ::d/u16) (b/write-int16! stream value)
+    (= prefix ::d/u32) (b/write-int32! stream value)))
 
 (defn- write-str! [stream str]
   (let [bdata (.getBytes str)
@@ -46,14 +46,13 @@
         (write-prefix! stream pfx datalen)
         (if (not= datalen speclen) (throw (Exception. "Array len do not match spec")))
         (run! #(f stream fmeta %) data)))))
-    
 
 (defn- dispatch-item! [stream item data]
   (let [[_ ftype fmeta] item]
     (cond
-      (= ftype ::d/i8) (process-item! stream fmeta data #(b/write-byte! %1 %3))
-      (= ftype ::d/i16) (process-item! stream fmeta data #(b/write-int16! %1 %3))
-      (= ftype ::d/i32) (process-item! stream fmeta data #(b/write-int32! %1 %3))
+      (contains? #{::d/i8 ::d/u8} ftype) (process-item! stream fmeta data #(b/write-byte! %1 %3))
+      (contains? #{::d/i16 ::d/u16} ftype) (process-item! stream fmeta data #(b/write-int16! %1 %3))
+      (contains? #{::d/i32 ::d/u32} ftype) (process-item! stream fmeta data #(b/write-int32! %1 %3))
       (= ftype ::d/i64) (process-item! stream fmeta data #(b/write-int64! %1 %3))
       (= ftype ::d/r32) (process-item! stream fmeta data #(b/write-real32! %1 %3))
       (= ftype ::d/r64) (process-item! stream fmeta data #(b/write-real64! %1 %3))
