@@ -1,40 +1,33 @@
-(ns seralbdev.protocool.core-test
+(ns seralbdev.protocool.bseq_encoder-test
   (:require [clojure.test :as t]
             [seralbdev.protocool.base :as b]
             [seralbdev.protocool.bseq :as d]
             [seralbdev.protocool.bseq_encoder :as enc]))
 
-(t/deftest process-pstr
+(t/deftest process-varlen-str
   (let [bs (b/create)
-        pseq [["F1" ::d/pstr {::d/pfx ::d/i16}]]
+        pseq [["F1" ::d/str]]
+        data ["HiWorld!"]
+        _ (enc/write! bs pseq data)
+        data (b/seal! bs)]
+    (t/is (= (seq data) [72 105 87 111 114 108 100 33 0]) true)))
+
+(t/deftest process-prefix-str
+  (let [bs (b/create)
+        pseq [["F1" ::d/str {::d/pfx ::d/i16}]]
         data ["HiWorld!"]
         _ (enc/write! bs pseq data)
         data (b/seal! bs)]
     (t/is (= (seq data) [0 8 72 105 87 111 114 108 100 33]) true)))
 
-(t/deftest process-str
+(t/deftest process-fixlen-str
   (let [bs (b/create)
-        pseq [["F1" ::d/str {::d/len 8}]]
-        data ["HiWorld!xx"]
+        pseq [["F1" ::d/str {::d/len 10}]]
+        data ["HiWorld!"]
         _ (enc/write! bs pseq data)
         data (b/seal! bs)]
-    (t/is (= (seq data) [72 105 87 111 114 108 100 33]) true)))
+    (t/is (= (seq data) [72 105 87 111 114 108 100 33 0 0]) true)))
 
-(t/deftest process-strs
-  (let [bs (b/create)
-        pseq [["F1" ::d/str {::d/rank 3  ::d/len 1}]]
-        data [["a" "b" "c"]]
-        _ (enc/write! bs pseq data)
-        data (b/seal! bs)]
-    (t/is (= (seq data) [97 98 99]) true)))
-
-(t/deftest process-strs-dyn
-  (let [bs (b/create)
-        pseq [["F1" ::d/str {::d/rank ::d/i8  ::d/len 1}]]
-        data [["a" "b" "c"]]
-        _ (enc/write! bs pseq data)
-        data (b/seal! bs)]
-    (t/is (= (seq data) [3 97 98 99]) true)))
 
 
 (t/deftest process-i8
