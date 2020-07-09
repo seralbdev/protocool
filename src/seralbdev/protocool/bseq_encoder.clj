@@ -57,20 +57,40 @@
   (let [padlen (:len fmeta)]
     (write-padding! stream padlen)))
 
+(defn- dispatch-single! [stream ftype fmeta value]
+  (cond
+    (contains? #{::d/i8 ::d/u8} ftype) (b/write-byte! stream value)
+    (contains? #{::d/i16 ::d/u16} ftype) (b/write-int16! stream value)
+    (contains? #{::d/i32 ::d/u32} ftype) (b/write-int32! stream value)
+    (= ftype ::d/i64) (b/write-int64! stream value)
+    (= ftype ::d/r32) (b/write-real32! stream value)
+    (= ftype ::d/r64) (b/write-real64! stream value)
+    (= ftype ::d/str) (process-str! stream fmeta value)
+    (= ftype ::d/bool) (process-bool! stream nil value)
+    (= ftype ::d/padding) (process-padding! stream fmeta)))
+
+(defn- dispatch-vector! [stream ftype fmeta value]
+  (cond
+    (contains? #{::d/i8 ::d/u8} ftype) (b/write-bytes! stream value 0 (count value))
+    (contains? #{::d/i16 ::d/u16} ftype) (b/write-ints16! stream value)
+    (contains? #{::d/i32 ::d/u32} ftype) (b/write-ints32! stream value)
+    (= ftype ::d/i64) (b/write-ints64! stream value)
+    (= ftype ::d/r32) (b/write-reals32! stream value)
+    (= ftype ::d/r64) (b/write-reals64! stream)
+    (= ftype ::d/str) (run! #(process-str! stream fmeta %) value)
+    (= ftype ::d/bool) (run! #(process-bool! stream nil %) value)))
+
 (defn- dispatch-item! [stream item data]
   (let [[fid ftype fmeta] item
-        value (get data fid)]
-    (cond
-      (contains? #{::d/i8 ::d/u8} ftype) (process-item! stream fmeta value #(b/write-byte! %1 %3))
-      (contains? #{::d/i16 ::d/u16} ftype) (process-item! stream fmeta value #(b/write-int16! %1 %3))
-      (contains? #{::d/i32 ::d/u32} ftype) (process-item! stream fmeta value #(b/write-int32! %1 %3))
-      (= ftype ::d/i64) (process-item! stream fmeta value #(b/write-int64! %1 %3))
-      (= ftype ::d/r32) (process-item! stream fmeta value #(b/write-real32! %1 %3))
-      (= ftype ::d/r64) (process-item! stream fmeta value #(b/write-real64! %1 %3))
-      (= ftype ::d/str) (process-item! stream fmeta value process-str!)
-      (= ftype ::d/bool) (process-item! stream fmeta value process-bool!)
-      (= ftype ::d/padding) (process-padding! stream fmeta))))
-
+        value (get data fid)
+        {rank ::d/rank} fmeta]
+    (if (nil? rank) (dispatch-single! stream ftype fmeta value) ;;data is a single value
+        (let [datalen (count value) ;;data is an array
+              pfx (if (keyword? rank) rank nil)
+              speclen (if (integer? rank) rank datalen)]
+          (write-prefix! stream pfx datalen)
+          (if (not= datalen speclen) (throw (Exception. "Array len do not match spec"))
+              (dispatch-vector! stream ftype fmeta value))))))
 
 (defn write! [stream pseq data]
     (run! #(dispatch-item! stream % data) pseq))
