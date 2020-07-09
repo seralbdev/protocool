@@ -183,10 +183,7 @@
     :else (.writeDouble b (double value))))
 
 (defn- write-array [values f]
-  (let [cnt (count values)]
-    (doall
-     (for [index (range cnt)]
-      (f (nth values index))))))
+    (run! f values))
 
 (defn write-ints16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} values]
   (cond
