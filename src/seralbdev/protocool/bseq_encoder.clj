@@ -49,34 +49,28 @@
         (if (not= datalen speclen) (throw (Exception. "Array len do not match spec")))
         (run! #(f stream fmeta %) data)))))
 
-(defn- process-bool! [stream fmeta data]
+(defn- process-bool! [stream _ data]
   (let [value (if data 1 0)]
     (b/write-byte! stream value)))
 
+(defn- process-padding! [stream fmeta]
+  (let [padlen (:len fmeta)]
+    (write-padding! stream padlen)))
+
 (defn- dispatch-item! [stream item data]
-  (let [[_ ftype fmeta] item]
+  (let [[fid ftype fmeta] item
+        value (get data fid)]
     (cond
-      (contains? #{::d/i8 ::d/u8} ftype) (process-item! stream fmeta data #(b/write-byte! %1 %3))
-      (contains? #{::d/i16 ::d/u16} ftype) (process-item! stream fmeta data #(b/write-int16! %1 %3))
-      (contains? #{::d/i32 ::d/u32} ftype) (process-item! stream fmeta data #(b/write-int32! %1 %3))
-      (= ftype ::d/i64) (process-item! stream fmeta data #(b/write-int64! %1 %3))
-      (= ftype ::d/r32) (process-item! stream fmeta data #(b/write-real32! %1 %3))
-      (= ftype ::d/r64) (process-item! stream fmeta data #(b/write-real64! %1 %3))
-      (= ftype ::d/str) (process-item! stream fmeta data process-str!)
-      (= ftype ::d/bool) (process-item! stream fmeta data process-bool!))))
+      (contains? #{::d/i8 ::d/u8} ftype) (process-item! stream fmeta value #(b/write-byte! %1 %3))
+      (contains? #{::d/i16 ::d/u16} ftype) (process-item! stream fmeta value #(b/write-int16! %1 %3))
+      (contains? #{::d/i32 ::d/u32} ftype) (process-item! stream fmeta value #(b/write-int32! %1 %3))
+      (= ftype ::d/i64) (process-item! stream fmeta value #(b/write-int64! %1 %3))
+      (= ftype ::d/r32) (process-item! stream fmeta value #(b/write-real32! %1 %3))
+      (= ftype ::d/r64) (process-item! stream fmeta value #(b/write-real64! %1 %3))
+      (= ftype ::d/str) (process-item! stream fmeta value process-str!)
+      (= ftype ::d/bool) (process-item! stream fmeta value process-bool!)
+      (= ftype ::d/padding) (process-padding! stream fmeta))))
 
-
-(defn get-specdata-pairs [pseq data]
-  (loop [pairs '()
-         pendingpseq pseq
-         pendingdata data]
-    (if (empty? pendingpseq) (reverse pairs)
-        (let [pseqitem (first pendingpseq)
-              [_ type] pseqitem
-              dataitem (if (= type ::d/padding) nil (first pendingdata))
-              restdata (if (= type ::d/padding) pendingdata (rest pendingdata))]
-          (recur (conj pairs pseqitem dataitem) (rest pendingpseq) restdata)))))
 
 (defn write! [stream pseq data]
-  (let [pairs (partition 2 (get-specdata-pairs pseq data))]
-    (run! #(dispatch-item! stream (first %) (last %)) pairs)))
+    (run! #(dispatch-item! stream % data) pseq))
