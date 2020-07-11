@@ -3,6 +3,8 @@
    [seralbdev.protocool.base :as b]
    [seralbdev.protocool.bseq :as d]))
 
+(declare write!)
+
 (defn- write-padding! [stream padlen]
   (b/write-bytes! stream (byte-array padlen) 0 padlen))
 
@@ -39,16 +41,6 @@
       (some? len) (process-fixlen-str! stream len data)
       :else (process-varlen-str! stream data))))
 
-(defn- process-item! [stream fmeta data f]
-  (let [{rank ::d/rank} fmeta]
-    (if (nil? rank) (f stream fmeta data) ;;data is a single value
-      (let [datalen (count data) ;;data is an array
-            pfx (if (keyword? rank) rank nil)
-            speclen (if (integer? rank) rank datalen)]
-        (write-prefix! stream pfx datalen)
-        (if (not= datalen speclen) (throw (Exception. "Array len do not match spec")))
-        (run! #(f stream fmeta %) data)))))
-
 (defn- process-bool! [stream _ data]
   (let [value (if data 1 0)]
     (b/write-byte! stream value)))
@@ -56,6 +48,10 @@
 (defn- process-padding! [stream fmeta]
   (let [padlen (:len fmeta)]
     (write-padding! stream padlen)))
+
+(defn- process-struct! [stream fmeta data]
+  (let [fields (::d/fields fmeta)]
+    (write! stream fields data)))
 
 (defn- dispatch-single! [stream ftype fmeta value]
   (cond
@@ -67,7 +63,8 @@
     (= ftype ::d/r64) (b/write-real64! stream value)
     (= ftype ::d/str) (process-str! stream fmeta value)
     (= ftype ::d/bool) (process-bool! stream nil value)
-    (= ftype ::d/padding) (process-padding! stream fmeta)))
+    (= ftype ::d/padding) (process-padding! stream fmeta)
+    (= ftype ::d/struct) (process-struct! stream fmeta value)))
 
 (defn- dispatch-vector! [stream ftype fmeta value]
   (cond

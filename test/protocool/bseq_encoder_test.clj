@@ -106,4 +106,14 @@
         value (b/read-byte! rbs)]
     (t/is (= value 1))))
 
+(t/deftest process-struct
+  (let [bs (b/create)
+        pseq [["F1" ::d/struct {::d/id "STRUCT1" ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
+        data {"F1" {"F11" true "F12" 33}}
+        _ (enc/write! bs pseq data)
+        data (b/seal! bs)
+        rbs (b/wrap-bytearray data)
+        f11 (b/read-byte! rbs)
+        f12 (b/read-int16! rbs)]
+    (t/is (and (= f11 1) (= f12 33)))))
 
