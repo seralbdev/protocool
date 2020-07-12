@@ -44,6 +44,11 @@
   (let [padlen (:len fmeta)]
     (read-padding! stream padlen)))
 
+(defn- process-bool! [stream _]
+  (let [value (b/read-byte! stream)
+        tf (if (= value 0) false true)]
+    tf))
+
 (defn- dispatch-single! [stream ftype fmeta]
   (cond
     (contains? #{::d/i8 ::d/u8} ftype) (b/read-byte! stream)
@@ -52,8 +57,8 @@
     (= ftype ::d/i64) (b/read-int64! stream)
     (= ftype ::d/r32) (b/read-real32! stream)
     (= ftype ::d/r64) (b/read-real64! stream)
-    ;(= ftype ::d/str) (process-str! stream fmeta)
-    ;(= ftype ::d/bool) (process-bool! stream nile)
+    (= ftype ::d/str) (process-str! stream fmeta)
+    (= ftype ::d/bool) (process-bool! stream)
     (= ftype ::d/padding) (process-padding! stream fmeta)))
     ;(= ftype ::d/struct) (process-struct! stream fmeta)))
 
@@ -64,9 +69,9 @@
     (contains? #{::d/i32 ::d/u32} ftype) (b/read-ints32! stream count)
     (= ftype ::d/i64) (b/read-ints64! stream)
     (= ftype ::d/r32) (b/read-reals32! stream)
-    (= ftype ::d/r64) (b/read-reals64! stream)))
-    ;(= ftype ::d/str) (run! #(process-str! stream fmeta %) value)
-    ;(= ftype ::d/bool) (run! #(process-bool! stream nil %) value)
+    (= ftype ::d/r64) (b/read-reals64! stream)
+    (= ftype ::d/str) (take count (repeatedly #(process-str! stream fmeta)))
+    (= ftype ::d/bool) (take count (repeatedly #(process-bool! stream fmeta)))))
     ;(= ftype ::d/struct) (run! #(process-struct! stream fmeta %) value)))
 
 (defn- dispatch-item! [stream item]
