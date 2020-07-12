@@ -1,4 +1,4 @@
-(ns seralbdev.protocool.pseq-decoder
+(ns seralbdev.protocool.pseq_decoder
   (:require
     [seralbdev.protocool.base :as b]
     [seralbdev.protocool.pseq :as d]))
@@ -52,4 +52,4 @@
           (dispatch-vector! stream count ftype fmeta)))))
 
 (defn read! [stream pseq]
-  (map #(dispatch-item! stream %) pseq))
+  (into {} (map #(dispatch-item! stream %) pseq)))
