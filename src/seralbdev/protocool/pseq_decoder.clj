@@ -49,7 +49,7 @@
         (let [pfx (::d/prefix fmeta)
               pfxlen (read-prefix! stream pfx)
               count (or pfxlen rank)];;data is a vector
-          (dispatch-vector! stream count ftype fmeta)))))
+          {fid (dispatch-vector! stream count ftype fmeta)}))))
 
 (defn read! [stream pseq]
   (into {} (map #(dispatch-item! stream %) pseq)))
