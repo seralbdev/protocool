@@ -1,4 +1,4 @@
-(ns seralbdev.protocool.bseq
+(ns seralbdev.protocool.pseq
   (:require
    [clojure.spec.alpha :as s]))
 

@@ -1,7 +1,7 @@
-(ns seralbdev.protocool.bseq_encoder
+(ns seralbdev.protocool.pseq_encoder
   (:require
    [seralbdev.protocool.base :as b]
-   [seralbdev.protocool.bseq :as d]))
+   [seralbdev.protocool.pseq :as d]))
 
 (declare write!)
 

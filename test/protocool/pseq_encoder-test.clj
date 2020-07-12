@@ -1,8 +1,8 @@
-(ns seralbdev.protocool.bseq_encoder-test
+(ns seralbdev.protocool.pseq_encoder-test
   (:require [clojure.test :as t]
             [seralbdev.protocool.base :as b]
-            [seralbdev.protocool.bseq :as d]
-            [seralbdev.protocool.bseq_encoder :as enc]))
+            [seralbdev.protocool.pseq :as d]
+            [seralbdev.protocool.pseq_encoder :as enc]))
 
 (t/deftest process-varlen-str
   (let [bs (b/create)
