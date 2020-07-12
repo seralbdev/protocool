@@ -75,7 +75,8 @@
     (= ftype ::d/r32) (b/write-reals32! stream value)
     (= ftype ::d/r64) (b/write-reals64! stream)
     (= ftype ::d/str) (run! #(process-str! stream fmeta %) value)
-    (= ftype ::d/bool) (run! #(process-bool! stream nil %) value)))
+    (= ftype ::d/bool) (run! #(process-bool! stream nil %) value)
+    (= ftype ::d/struct) (run! #(process-struct! stream fmeta %) value)))
 
 (defn- dispatch-item! [stream item data]
   (let [[fid ftype fmeta] item

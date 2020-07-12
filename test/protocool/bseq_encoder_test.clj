@@ -117,3 +117,15 @@
         f12 (b/read-int16! rbs)]
     (t/is (and (= f11 1) (= f12 33)))))
 
+(t/deftest process-struct-vector
+  (let [bs (b/create)
+        pseq [["F1" ::d/struct {::d/id "STRUCT1" ::d/rank 2 ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
+        data {"F1" [{"F11" true "F12" 33}{"F11" false "F12" 34}]}
+        _ (enc/write! bs pseq data)
+        data (b/seal! bs)
+        rbs (b/wrap-bytearray data)
+        f11-1 (b/read-byte! rbs)
+        f12-1 (b/read-int16! rbs)
+        f11-2 (b/read-byte! rbs)
+        f12-2 (b/read-int16! rbs)]
+    (t/is (and (= f11-1 1) (= f12-1 33) (= f11-2 0) (= f12-2 34)))))
