@@ -13,6 +13,33 @@
     (= prefix ::d/u16) (b/read-uint16! stream)
     (= prefix ::d/u32) (b/read-uint32! stream)))
 
+(defn- read-str! [stream len]
+  (let [data (b/read-bytes! stream len)
+        txt (String. data)]
+    txt))
+
+(defn- process-pfx-str! [stream prefix]
+  (let [len (read-prefix! stream prefix)]
+    (read-str! stream len)))
+
+(defn- process-fixlen-str! [stream maxlen]
+  (let [rawdata (b/read-bytes! stream maxlen)
+        trimdata (byte-array (remove #(= % 0) rawdata))]
+    (String. trimdata)))
+
+(defn- process-varlen-str! [stream]
+  (loop [txt '()]
+    (let [ch (b/read-byte! stream)]
+      (if (= ch 0) (String. (byte-array txt))
+          (recur (conj txt ch))))))
+
+(defn- process-str! [stream fmeta]
+  (let [{pfx ::d/pfx len ::d/len} fmeta]
+    (cond
+      (some? pfx) (process-pfx-str! stream pfx)
+      (some? len) (process-fixlen-str! stream len)
+      :else (process-varlen-str! stream))))
+
 (defn- process-padding! [stream fmeta]
   (let [padlen (:len fmeta)]
     (read-padding! stream padlen)))
