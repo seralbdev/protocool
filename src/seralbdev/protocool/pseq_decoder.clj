@@ -3,8 +3,10 @@
     [seralbdev.protocool.base :as b]
     [seralbdev.protocool.pseq :as d]))
 
+(declare read!)
+
 (defn- read-padding! [stream padlen]
-  (b/read-bytes! stream padlen)
+  (b/skip! stream padlen)
   nil)
 
 (defn- read-prefix! [stream prefix]
@@ -49,6 +51,10 @@
         tf (if (= value 0) false true)]
     tf))
 
+(defn- process-struct! [stream fmeta]
+  (let [fieldseq (::d/fields fmeta)]
+    (read! stream fieldseq)))
+
 (defn- dispatch-single! [stream ftype fmeta]
   (cond
     (contains? #{::d/i8 ::d/u8} ftype) (b/read-byte! stream)
@@ -58,21 +64,21 @@
     (= ftype ::d/r32) (b/read-real32! stream)
     (= ftype ::d/r64) (b/read-real64! stream)
     (= ftype ::d/str) (process-str! stream fmeta)
-    (= ftype ::d/bool) (process-bool! stream)
-    (= ftype ::d/padding) (process-padding! stream fmeta)))
-    ;(= ftype ::d/struct) (process-struct! stream fmeta)))
+    (= ftype ::d/bool) (process-bool! stream nil)
+    (= ftype ::d/padding) (process-padding! stream fmeta)
+    (= ftype ::d/struct) (process-struct! stream fmeta)))
 
 (defn- dispatch-vector! [stream count ftype fmeta]
   (cond
     (contains? #{::d/i8 ::d/u8} ftype) (b/read-bytes! stream 0 count)
     (contains? #{::d/i16 ::d/u16} ftype) (b/read-ints16! stream count)
     (contains? #{::d/i32 ::d/u32} ftype) (b/read-ints32! stream count)
-    (= ftype ::d/i64) (b/read-ints64! stream)
-    (= ftype ::d/r32) (b/read-reals32! stream)
-    (= ftype ::d/r64) (b/read-reals64! stream)
+    (= ftype ::d/i64) (b/read-ints64! stream count)
+    (= ftype ::d/r32) (b/read-reals32! stream count)
+    (= ftype ::d/r64) (b/read-reals64! stream count)
     (= ftype ::d/str) (take count (repeatedly #(process-str! stream fmeta)))
-    (= ftype ::d/bool) (take count (repeatedly #(process-bool! stream fmeta)))))
-    ;(= ftype ::d/struct) (run! #(process-struct! stream fmeta %) value)))
+    (= ftype ::d/bool) (take count (repeatedly #(process-bool! stream fmeta)))
+    (= ftype ::d/struct) (take count (repeatedly #(process-struct! stream fmeta)))))
 
 (defn- dispatch-item! [stream item]
   (let [[fid ftype fmeta] item

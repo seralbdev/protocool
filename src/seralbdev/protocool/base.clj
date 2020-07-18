@@ -19,6 +19,12 @@
   [{b :buffer} position]
   (.readerIndex b position))
 
+(defn skip!
+  "Skips the selected
+  number of bytes"
+  [{b :buffer} numBytes]
+  (.skipBytes b numBytes))
+
 (defn rslice!
   "Returns a new stream which is a view
   of current one from the reading position
