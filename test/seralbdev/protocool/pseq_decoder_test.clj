@@ -1,4 +1,4 @@
-(ns protocool.pseq-decoder-test
+(ns seralbdev.protocool.pseq_decoder-test
   (:require [clojure.test :as t]
             [clojure.data :as cd]
             [seralbdev.protocool.base :as b]
