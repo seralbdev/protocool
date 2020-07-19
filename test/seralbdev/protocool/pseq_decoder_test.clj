@@ -29,6 +29,18 @@
         f12 (get-in data ["F1" "F12"])]
     (t/is (and (= f11 true) (= f12 66)))))
 
+(t/deftest process-struct2
+  (let [bs (b/create)
+        _ (b/write-byte! bs 1)
+        _ (b/write-bytes! bs [0 0 0 0 0 0] 0 6)
+        _ (b/write-int16! bs 66)
+        pseq [["F1" ::d/struct {::d/id "STRUCT1" ::d/fields [["F11" ::d/bool] ["" ::d/padding {::d/len 6}] ["F12" ::d/i16]]}]]
+        data (dc/read! bs pseq)
+        f11 (get-in data ["F1" "F11"])
+        f12 (get-in data ["F1" "F12"])]
+    (t/is (and (= f11 true) (= f12 66)))))
+
+
 (t/deftest process-struct-vector
   (let [bs (b/create)
         _ (b/write-byte! bs 1)

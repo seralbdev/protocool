@@ -43,7 +43,7 @@
       :else (process-varlen-str! stream))))
 
 (defn- process-padding! [stream fmeta]
-  (let [padlen (:len fmeta)]
+  (let [padlen (::d/len fmeta)]
     (read-padding! stream padlen)))
 
 (defn- process-bool! [stream _]

@@ -46,7 +46,7 @@
     (b/write-byte! stream value)))
 
 (defn- process-padding! [stream fmeta]
-  (let [padlen (:len fmeta)]
+  (let [padlen (::d/len fmeta)]
     (write-padding! stream padlen)))
 
 (defn- process-struct! [stream fmeta data]
