@@ -87,6 +87,11 @@
     (.readBytes b ar)
     ar))
 
+(defn read-ubytes! [{^io.netty.buffer.ByteBuf b :buffer} count]
+  (let [ar (short-array count)]
+    (read-array ar #(.readUnsignedByte b))
+    ar))
+
 (defn read-ints16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (short-array count)]
     (cond
@@ -94,11 +99,25 @@
       :else (read-array ar #(.readShort b)))
     ar))
 
+(defn read-uints16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
+  (let [ar (int-array count)]
+    (cond
+      (= m :LE) (read-array ar #(.readUnsignedShortLE b))
+      :else (read-array ar #(.readUnsignedShort b)))
+    ar))
+
 (defn read-ints32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (int-array count)]
     (cond
       (= m :LE) (read-array ar #(.readIntLE b))
       :else (read-array ar #(.readInt b)))
+    ar))
+
+(defn read-uints32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
+  (let [ar (long-array count)]
+    (cond
+      (= m :LE) (read-array ar #(.readUnsignedIntLE b))
+      :else (read-array ar #(.readUnsignedInt b)))
     ar))
 
 (defn read-ints64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]

@@ -57,9 +57,12 @@
 
 (defn- dispatch-single! [stream ftype fmeta]
   (cond
-    (contains? #{::d/i8 ::d/u8} ftype) (b/read-byte! stream)
-    (contains? #{::d/i16 ::d/u16} ftype) (b/read-int16! stream)
-    (contains? #{::d/i32 ::d/u32} ftype) (b/read-int32! stream)
+    (= ftype ::d/i8) (b/read-byte! stream)
+    (= ftype ::d/u8) (b/read-ubyte! stream)
+    (= ftype ::d/i16) (b/read-int16! stream)
+    (= ftype ::d/u16) (b/read-uint16! stream)
+    (= ftype ::d/i32) (b/read-int32! stream)
+    (= ftype ::d/u32) (b/read-uint32! stream)
     (= ftype ::d/i64) (b/read-int64! stream)
     (= ftype ::d/r32) (b/read-real32! stream)
     (= ftype ::d/r64) (b/read-real64! stream)
@@ -70,9 +73,12 @@
 
 (defn- dispatch-vector! [stream count ftype fmeta]
   (cond
-    (contains? #{::d/i8 ::d/u8} ftype) (b/read-bytes! stream 0 count)
-    (contains? #{::d/i16 ::d/u16} ftype) (b/read-ints16! stream count)
-    (contains? #{::d/i32 ::d/u32} ftype) (b/read-ints32! stream count)
+    (= ftype ::d/i8) (b/read-bytes! stream count)
+    (= ftype ::d/u8) (b/read-ubytes! stream count)
+    (= ftype ::d/i16) (b/read-ints16! stream count)
+    (= ftype ::d/u16) (b/read-uints16! stream count)
+    (= ftype ::d/i32) (b/read-ints32! stream count)
+    (= ftype ::d/u32) (b/read-uints32! stream count)
     (= ftype ::d/i64) (b/read-ints64! stream count)
     (= ftype ::d/r32) (b/read-reals32! stream count)
     (= ftype ::d/r64) (b/read-reals64! stream count)
