@@ -261,7 +261,6 @@
   []
   {:mode :BE :buffer (Unpooled/buffer)})
 
-
 (defn seal!
   "Seals this stream and
   returns a the backing byte array"
@@ -269,4 +268,11 @@
   (.capacity b (.writerIndex b))
   (.array b))
 
-
+(defn new
+  "Returns a new stream with the same
+  configuration as this one
+  source: stream"
+  [source]
+  (let [mode (:mode source)]
+    (if (= mode :LE) (createLE)
+        (create))))
