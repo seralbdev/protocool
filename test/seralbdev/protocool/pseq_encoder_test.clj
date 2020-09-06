@@ -108,7 +108,7 @@
 
 (t/deftest process-struct
   (let [bs (b/create)
-        pseq [["F1" ::d/struct {::d/id "STRUCT1" ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
+        pseq [["F1" ::d/pseq {::d/id "STRUCT1" ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
         data {"F1" {"F11" true "F12" 33}}
         _ (enc/write! bs pseq data)
         data (b/seal! bs)
@@ -119,7 +119,7 @@
 
 (t/deftest process-struct2
   (let [bs (b/create)
-        pseq [["F1" ::d/struct {::d/id "STRUCT1" ::d/fields [["F11" ::d/bool] ["" ::d/padding {::d/len 6}] ["F12" ::d/i16]]}]]
+        pseq [["F1" ::d/pseq {::d/fields [["F11" ::d/bool] ["" ::d/padding {::d/len 6}] ["F12" ::d/i16]]}]]
         data {"F1" {"F11" true "F12" 33}}
         _ (enc/write! bs pseq data)
         data (b/seal! bs)
@@ -132,7 +132,7 @@
 
 (t/deftest process-struct-vector
   (let [bs (b/create)
-        pseq [["F1" ::d/struct {::d/id "STRUCT1" ::d/rank 2 ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
+        pseq [["F1" ::d/pseq {::d/rank 2 ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
         data {"F1" [{"F11" true "F12" 33}{"F11" false "F12" 34}]}
         _ (enc/write! bs pseq data)
         data (b/seal! bs)

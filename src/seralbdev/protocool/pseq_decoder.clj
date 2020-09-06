@@ -51,7 +51,7 @@
         tf (if (= value 0) false true)]
     tf))
 
-(defn- process-struct! [stream fmeta]
+(defn- process-pseq! [stream fmeta]
   (let [fieldseq (::d/fields fmeta)]
     (read! stream fieldseq)))
 
@@ -69,7 +69,7 @@
     (= ftype ::d/str) (process-str! stream fmeta)
     (= ftype ::d/bool) (process-bool! stream nil)
     (= ftype ::d/padding) (process-padding! stream fmeta)
-    (= ftype ::d/struct) (process-struct! stream fmeta)))
+    (= ftype ::d/pseq) (process-pseq! stream fmeta)))
 
 (defn- dispatch-vector! [stream count ftype fmeta]
   (cond
@@ -84,7 +84,7 @@
     (= ftype ::d/r64) (b/read-reals64! stream count)
     (= ftype ::d/str) (take count (repeatedly #(process-str! stream fmeta)))
     (= ftype ::d/bool) (take count (repeatedly #(process-bool! stream fmeta)))
-    (= ftype ::d/struct) (take count (repeatedly #(process-struct! stream fmeta)))))
+    (= ftype ::d/pseq) (take count (repeatedly #(process-pseq! stream fmeta)))))
 
 (defn- dispatch-item! [stream item]
   (let [[fid ftype fmeta] item

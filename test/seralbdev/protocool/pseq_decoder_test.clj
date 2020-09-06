@@ -23,7 +23,7 @@
   (let [bs (b/create)
         _ (b/write-byte! bs 1)
         _ (b/write-int16! bs 66)
-        pseq [["F1" ::d/struct {::d/id "STRUCT1" ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
+        pseq [["F1" ::d/pseq {::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
         data (dc/read! bs pseq)
         f11 (get-in data ["F1" "F11"])
         f12 (get-in data ["F1" "F12"])]
@@ -34,7 +34,7 @@
         _ (b/write-byte! bs 1)
         _ (b/write-bytes! bs [0 0 0 0 0 0] 0 6)
         _ (b/write-int16! bs 66)
-        pseq [["F1" ::d/struct {::d/id "STRUCT1" ::d/fields [["F11" ::d/bool] ["" ::d/padding {::d/len 6}] ["F12" ::d/i16]]}]]
+        pseq [["F1" ::d/pseq {::d/fields [["F11" ::d/bool] ["" ::d/padding {::d/len 6}] ["F12" ::d/i16]]}]]
         data (dc/read! bs pseq)
         f11 (get-in data ["F1" "F11"])
         f12 (get-in data ["F1" "F12"])]
@@ -47,7 +47,7 @@
         _ (b/write-int16! bs 66)
         _ (b/write-byte! bs 0)
         _ (b/write-int16! bs 33)
-        pseq [["F1" ::d/struct {::d/rank 2 ::d/id "STRUCT1" ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
+        pseq [["F1" ::d/pseq {::d/rank 2 ::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
         data (dc/read! bs pseq)
         vdata (get data "F1")
         f11 (get (nth vdata 0) "F11")

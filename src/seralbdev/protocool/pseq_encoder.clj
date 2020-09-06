@@ -49,7 +49,7 @@
   (let [padlen (::d/len fmeta)]
     (write-padding! stream padlen)))
 
-(defn- process-struct! [stream fmeta data]
+(defn- process-pseq! [stream fmeta data]
   (let [fields (::d/fields fmeta)]
     (write! stream fields data)))
 
@@ -64,7 +64,9 @@
     (= ftype ::d/str) (process-str! stream fmeta value)
     (= ftype ::d/bool) (process-bool! stream nil value)
     (= ftype ::d/padding) (process-padding! stream fmeta)
-    (= ftype ::d/struct) (process-struct! stream fmeta value)))
+    (= ftype ::d/pseq) (process-pseq! stream fmeta value)))
+
+(defn- dispatch-single-ref! [stream fmeta value])
 
 (defn- dispatch-vector! [stream ftype fmeta value]
   (cond
@@ -76,7 +78,9 @@
     (= ftype ::d/r64) (b/write-reals64! stream)
     (= ftype ::d/str) (run! #(process-str! stream fmeta %) value)
     (= ftype ::d/bool) (run! #(process-bool! stream nil %) value)
-    (= ftype ::d/struct) (run! #(process-struct! stream fmeta %) value)))
+    (= ftype ::d/pseq) (run! #(process-pseq! stream fmeta %) value)))
+
+(defn- dispatch-vector-ref! [stream fmeta value])
 
 (defn- dispatch-item! [stream item data]
   (let [[fid ftype fmeta] item
