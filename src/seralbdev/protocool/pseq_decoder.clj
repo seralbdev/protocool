@@ -51,11 +51,19 @@
         tf (if (= value 0) false true)]
     tf))
 
-(defn- process-pseq! [stream fmeta]
+(defn- process-pseq! [stream resolver fmeta]
   (let [fieldseq (::d/fields fmeta)]
-    (read! stream fieldseq)))
+    (read! stream resolver fieldseq)))
 
-(defn- dispatch-single! [stream ftype fmeta]
+(defn- process-psref!
+  "resolver: f(pseqid)->pseq
+   fmeta: {::pfx ::i8|::i16|::i32}"
+  [stream resolver fmeta]
+  (let [pseqid (process-str! stream fmeta)
+        reffmeta {::d/fields (resolver pseqid)}]
+    (process-pseq! stream resolver reffmeta)))
+
+(defn- dispatch-single! [stream resolver ftype fmeta]
   (cond
     (= ftype ::d/i8) (b/read-byte! stream)
     (= ftype ::d/u8) (b/read-ubyte! stream)
@@ -69,9 +77,10 @@
     (= ftype ::d/str) (process-str! stream fmeta)
     (= ftype ::d/bool) (process-bool! stream nil)
     (= ftype ::d/padding) (process-padding! stream fmeta)
-    (= ftype ::d/pseq) (process-pseq! stream fmeta)))
+    (= ftype ::d/pseq) (process-pseq! stream resolver fmeta)
+    (= ftype ::d/psref) (process-psref! stream resolver fmeta)))
 
-(defn- dispatch-vector! [stream count ftype fmeta]
+(defn- dispatch-vector! [stream resolver count ftype fmeta]
   (cond
     (= ftype ::d/i8) (b/read-bytes! stream count)
     (= ftype ::d/u8) (b/read-ubytes! stream count)
@@ -84,16 +93,17 @@
     (= ftype ::d/r64) (b/read-reals64! stream count)
     (= ftype ::d/str) (take count (repeatedly #(process-str! stream fmeta)))
     (= ftype ::d/bool) (take count (repeatedly #(process-bool! stream fmeta)))
-    (= ftype ::d/pseq) (take count (repeatedly #(process-pseq! stream fmeta)))))
+    (= ftype ::d/pseq) (take count (repeatedly #(process-pseq! stream resolver fmeta)))
+    (= ftype ::d/psref) (take count (repeatedly #(process-psref! stream resolver fmeta)))))
 
-(defn- dispatch-item! [stream item]
+(defn- dispatch-item! [stream resolver item]
   (let [[fid ftype fmeta] item
         rank (::d/rank fmeta)]
-    (if (nil? rank) {fid (dispatch-single! stream ftype fmeta)} ;;data is a single value
+    (if (nil? rank) {fid (dispatch-single! stream resolver ftype fmeta)} ;;data is a single value
         (let [pfx (::d/prefix fmeta)
               pfxlen (read-prefix! stream pfx)
               count (or pfxlen rank)];;data is a vector
-          {fid (dispatch-vector! stream count ftype fmeta)}))))
+          {fid (dispatch-vector! stream resolver count ftype fmeta)}))))
 
-(defn read! [stream pseq]
-  (into {} (map #(dispatch-item! stream %) pseq)))
+(defn read! [stream resolver pseq]
+  (into {} (map #(dispatch-item! stream resolver %) pseq)))
