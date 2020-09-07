@@ -49,11 +49,21 @@
   (let [padlen (::d/len fmeta)]
     (write-padding! stream padlen)))
 
-(defn- process-pseq! [stream fmeta data]
+(defn- process-pseq! [stream resolver fmeta data]
   (let [fields (::d/fields fmeta)]
-    (write! stream fields data)))
+    (write! stream resolver fields data)))
 
-(defn- dispatch-single! [stream ftype fmeta value]
+(defn- process-psref!
+  "resolver: f(pseqid)->pseq
+   fmeta: {::pfx ::i8|::i16|::i32}
+   value: ['refid' [{'f1' value1 'f2' value2 ...} {} ...]"
+  [stream resolver fmeta value]
+  (let [[pseqid data] value
+        reffmeta {::d/fields (resolver pseqid)}]
+    (process-str! stream fmeta pseqid) ;;write refid
+    (run! #(process-pseq! stream resolver reffmeta %) data)))
+
+(defn- dispatch-single! [stream resolver ftype fmeta value]
   (cond
     (contains? #{::d/i8 ::d/u8} ftype) (b/write-byte! stream value)
     (contains? #{::d/i16 ::d/u16} ftype) (b/write-int16! stream value)
@@ -64,11 +74,10 @@
     (= ftype ::d/str) (process-str! stream fmeta value)
     (= ftype ::d/bool) (process-bool! stream nil value)
     (= ftype ::d/padding) (process-padding! stream fmeta)
-    (= ftype ::d/pseq) (process-pseq! stream fmeta value)))
+    (= ftype ::d/pseq) (process-pseq! stream resolver fmeta value)
+    (= ftype ::d/psref) (process-psref! stream resolver fmeta value)))
 
-(defn- dispatch-single-ref! [stream fmeta value])
-
-(defn- dispatch-vector! [stream ftype fmeta value]
+(defn- dispatch-vector! [stream resolver ftype fmeta value]
   (cond
     (contains? #{::d/i8 ::d/u8} ftype) (b/write-bytes! stream value 0 (count value))
     (contains? #{::d/i16 ::d/u16} ftype) (b/write-ints16! stream value)
@@ -78,21 +87,19 @@
     (= ftype ::d/r64) (b/write-reals64! stream)
     (= ftype ::d/str) (run! #(process-str! stream fmeta %) value)
     (= ftype ::d/bool) (run! #(process-bool! stream nil %) value)
-    (= ftype ::d/pseq) (run! #(process-pseq! stream fmeta %) value)))
+    (= ftype ::d/pseq) (process-psref! stream resolver fmeta value)))
 
-(defn- dispatch-vector-ref! [stream fmeta value])
-
-(defn- dispatch-item! [stream item data]
+(defn- dispatch-item! [stream resolver item data]
   (let [[fid ftype fmeta] item
         value (get data fid)
         {rank ::d/rank} fmeta]
-    (if (nil? rank) (dispatch-single! stream ftype fmeta value) ;;data is a single value
+    (if (nil? rank) (dispatch-single! stream resolver ftype fmeta value) ;;data is a single value
         (let [datalen (count value) ;;data is an array
               pfx (if (keyword? rank) rank nil)
               speclen (if (integer? rank) rank datalen)]
           (write-prefix! stream pfx datalen)
           (if (not= datalen speclen) (throw (Exception. "Array len do not match spec"))
-              (dispatch-vector! stream ftype fmeta value))))))
+              (dispatch-vector! stream resolver ftype fmeta value))))))
 
-(defn write! [stream pseq data]
-    (run! #(dispatch-item! stream % data) pseq))
+(defn write! [stream resolver pseq data]
+    (run! #(dispatch-item! stream resolver % data) pseq))
