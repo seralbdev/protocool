@@ -4,6 +4,7 @@
    [seralbdev.protocool.pseq :as d]))
 
 (declare write!)
+(declare dispatch-vector!)
 
 (defn- write-padding! [stream padlen]
   (b/write-bytes! stream (byte-array padlen) 0 padlen))
@@ -77,6 +78,16 @@
     (= ftype ::d/pseq) (process-pseq! stream resolver fmeta value)
     (= ftype ::d/psref) (process-psref! stream resolver fmeta value)))
 
+(defn- dispatch-psref-vector!
+  "fmeta => {::pfx ix ::rank n ::fields [...]]}
+  value => ['REFID' [{...}...{...}]]"
+  [stream resolver fmeta value]
+  (let [[pseqid fieldata] value
+        reffmeta {::d/fields (resolver pseqid)}]
+    (process-str! stream fmeta pseqid)
+    (dispatch-vector! stream resolver ::d/psref reffmeta fieldata)))
+        
+
 (defn- dispatch-vector! [stream resolver ftype fmeta value]
   (cond
     (contains? #{::d/i8 ::d/u8} ftype) (b/write-bytes! stream value 0 (count value))
@@ -87,7 +98,8 @@
     (= ftype ::d/r64) (b/write-reals64! stream)
     (= ftype ::d/str) (run! #(process-str! stream fmeta %) value)
     (= ftype ::d/bool) (run! #(process-bool! stream nil %) value)
-    (= ftype ::d/pseq) (process-psref! stream resolver fmeta value)))
+    (= ftype ::d/pseq) (run! #(process-pseq! stream resolver fmeta %) value)
+    (= ftype ::d/psref) (dispatch-psref-vector! stream resolver fmeta value)))
 
 (defn- dispatch-item! [stream resolver item data]
   (let [[fid ftype fmeta] item
