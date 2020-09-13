@@ -62,7 +62,7 @@
   (let [[pseqid data] value
         reffmeta {::d/fields (resolver pseqid)}]
     (process-str! stream fmeta pseqid) ;;write refid
-    (run! #(process-pseq! stream resolver reffmeta %) data)))
+    (process-pseq! stream resolver reffmeta data)))
 
 (defn- dispatch-single! [stream resolver ftype fmeta value]
   (cond
@@ -85,8 +85,7 @@
   (let [[pseqid fieldata] value
         reffmeta {::d/fields (resolver pseqid)}]
     (process-str! stream fmeta pseqid)
-    (dispatch-vector! stream resolver ::d/psref reffmeta fieldata)))
-        
+    (run! #(process-pseq! stream resolver reffmeta %) fieldata)))
 
 (defn- dispatch-vector! [stream resolver ftype fmeta value]
   (cond

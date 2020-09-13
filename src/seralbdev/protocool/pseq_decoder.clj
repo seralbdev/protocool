@@ -80,6 +80,11 @@
     (= ftype ::d/pseq) (process-pseq! stream resolver fmeta)
     (= ftype ::d/psref) (process-psref! stream resolver fmeta)))
 
+(defn- dispatch-psref-vector! [stream resolver count fmeta]
+  (let [pseqid (process-str! stream fmeta)
+         reffmeta {::d/fields (resolver pseqid)}]
+     (take count (repeatedly #(process-pseq! stream resolver reffmeta)))))
+
 (defn- dispatch-vector! [stream resolver count ftype fmeta]
   (cond
     (= ftype ::d/i8) (b/read-bytes! stream count)
@@ -94,7 +99,7 @@
     (= ftype ::d/str) (take count (repeatedly #(process-str! stream fmeta)))
     (= ftype ::d/bool) (take count (repeatedly #(process-bool! stream fmeta)))
     (= ftype ::d/pseq) (take count (repeatedly #(process-pseq! stream resolver fmeta)))
-    (= ftype ::d/psref) (take count (repeatedly #(process-psref! stream resolver fmeta)))))
+    (= ftype ::d/psref) (dispatch-psref-vector! stream resolver count fmeta)))
 
 (defn- dispatch-item! [stream resolver item]
   (let [[fid ftype fmeta] item
