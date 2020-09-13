@@ -143,4 +143,37 @@
         f12-2 (b/read-int16! rbs)]
     (t/is (and (= f11-1 1) (= f12-1 33) (= f11-2 0) (= f12-2 34)))))
 
-;;TODO => PSREF scalar & vector unit tests!!!
+(t/deftest process-psref1
+  (let [bs (b/create)
+        resolver (fn [_] [["F11" ::d/bool] ["F12" ::d/i16]])
+        pseq [["F1" ::d/psref {::d/pfx ::d/u16}]]
+        data {"F1" ["SEQ1" {"F11" true "F12" 33}]}
+        _ (enc/write! bs resolver pseq data)
+        data (b/seal! bs)
+        rbs (b/wrap-bytearray data)
+        psidcnt (b/read-int16! rbs)
+        pseqid (String. (b/read-bytes! rbs psidcnt))
+        f11 (b/read-byte! rbs)
+        f12 (b/read-int16! rbs)]
+    (t/is (= pseqid "SEQ1"))
+    (t/is (and (= f11 1) (= f12 33)))))
+
+(t/deftest process-psref-vector1
+  (let [bs (b/create)
+        resolver (fn [_] [["F11" ::d/bool] ["F12" ::d/i16]])
+        pseq [["F1" ::d/psref {::d/rank ::d/u16 ::d/pfx ::d/u16}]]
+        data {"F1" ["SEQ1" [{"F11" true "F12" 33}{"F11" false "F12" 66}]]}
+        _ (enc/write! bs resolver pseq data)
+        data (b/seal! bs)
+        rbs (b/wrap-bytearray data)
+        rank (b/read-int16! rbs)
+        psidcnt (b/read-int16! rbs)
+        pseqid (String. (b/read-bytes! rbs psidcnt))
+        f11-1 (b/read-byte! rbs)
+        f12-1 (b/read-int16! rbs)
+        f11-2 (b/read-byte! rbs)
+        f12-2 (b/read-int16! rbs)]
+    (t/is (= rank 2))
+    (t/is (= pseqid "SEQ1"))
+    (t/is (and (= f11-1 1) (= f12-1 33)))
+    (t/is (and (= f11-2 0) (= f12-2 66)))))
