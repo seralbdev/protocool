@@ -62,7 +62,7 @@
         resolver (fn [_] [["F11" ::d/bool] ["F12" ::d/i16]])
         tpseq [["F1" ::d/str {::d/pfx ::d/u16}] ["F2" ::d/pseq {::d/fields [["F11" ::d/bool] ["F12" ::d/i16]]}]]
         tdata {"F1" "ps1" "F2" {"F11" true "F12" 66}}
-        _ (ec/write! bs tpseq tdata)
+        _ (ec/write! bs nil tpseq tdata)
         pseq [["F1" ::d/psref {::d/pfx ::d/u16}]]
         data (dc/read! bs resolver pseq)
         f11 (get-in data ["F1" "F11"])
