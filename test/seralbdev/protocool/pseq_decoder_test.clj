@@ -68,3 +68,23 @@
         f11 (get-in data ["F1" "F11"])
         f12 (get-in data ["F1" "F12"])]
     (t/is (and (= f11 true) (= f12 66)))))
+
+(t/deftest process-psref-vector1
+  (let [bs (b/create)
+        resolver (fn [_] [["F11" ::d/bool] ["F12" ::d/i16]])
+        pseq [["F1" ::d/psref {::d/rank ::d/u16 ::d/pfx ::d/u16}]]
+        tpseq [["RANK" ::d/u16] ["SEQID" ::d/str {::d/pfx ::d/u16}] ["F11" ::d/bool] ["F12" ::d/i16] ["F21" ::d/bool] ["F22" ::d/i16]]
+        tdata {"RANK" 2 "SEQID" "_" "F11" true "F12" 33 "F21" false "F22" 66}
+        _ (ec/write! bs nil tpseq tdata)
+        wdata (b/seal! bs)
+        rbs (b/wrap-bytearray wdata)
+        rdata (dc/read! rbs resolver pseq)
+        f1 (get rdata "F1")
+        item1 (nth f1 0)
+        item2 (nth f1 1)
+        f11 (get item1 "F11")
+        f12 (get item1 "F12")
+        f21 (get item2 "F11")
+        f22 (get item2 "F12")]
+    (t/is (and (= f11 true) (= f12 33)))
+    (t/is (and (= f21 false) (= f22 66)))))
