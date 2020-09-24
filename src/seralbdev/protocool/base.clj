@@ -239,40 +239,40 @@
 ;; STREAM INTERFACE
 ;; -----------------------------------------
 
-(defn wrap-bytearrayLE
+(defn wrap-bytearray
   "Creates a stream that wraps an existing
   byte array in LE mode"
   [values]
   {:mode :LE :buffer (Unpooled/wrappedBuffer values)})
 
-(defn wrap-bytearray
+(defn wrap-bytearrayBE
   "Creates a stream that wraps an existing
   byte array in BE mode"
   [values]
   {:mode :BE :buffer (Unpooled/wrappedBuffer values)})
 
-(defn createLE
+(defn create
   "Creates an empty stream in Little Endian mode"
   []
   {:mode :LE :buffer (Unpooled/buffer)})
 
-(defn create
+(defn createBE
   "Creates an empty stream in Big Endian mode"
   []
   {:mode :BE :buffer (Unpooled/buffer)})
 
 (defn seal!
   "Seals this stream and
-  returns a the backing byte array"
+  returns the backing byte array"
   [{^io.netty.buffer.ByteBuf b :buffer}]
   (.capacity b (.writerIndex b))
   (.array b))
 
-(defn new
-  "Returns a new stream with the same
+(defn clone
+  "Returns a new (empty) stream with the same
   configuration as this one
   source: stream"
   [source]
   (let [mode (:mode source)]
-    (if (= mode :LE) (createLE)
-        (create))))
+    (if (= mode :LE) (create)
+        (createBE))))

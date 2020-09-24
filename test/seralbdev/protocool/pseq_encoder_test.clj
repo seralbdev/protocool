@@ -18,7 +18,7 @@
         data {"F1" "HiWorld!"}
         _ (enc/write! bs nil pseq data)
         data (b/seal! bs)]
-    (t/is (= (seq data) [0 8 72 105 87 111 114 108 100 33]) true)))
+    (t/is (= (seq data) [8 0 72 105 87 111 114 108 100 33]) true)))
 
 (t/deftest process-fixlen-str
   (let [bs (b/create)
@@ -50,7 +50,7 @@
         data {"F1" 69}
         _ (enc/write! bs nil pseq data)
         data (b/seal! bs)]
-    (t/is (= (seq data) [0 69]) true)))
+    (t/is (= (seq data) [69 0]) true)))
 
 (t/deftest process-i16-array
   (let [bs (b/create)
@@ -58,7 +58,7 @@
         data {"F1" [69 70 71]}
         _ (enc/write! bs nil pseq data)
         data (b/seal! bs)]
-    (t/is (= (seq data) [0 69 0 70 0 71]) true)))
+    (t/is (= (seq data) [69 0 70 0 71 0]) true)))
 
 (t/deftest process-i32
   (let [bs (b/create)
@@ -66,7 +66,7 @@
         data {"F1" 69}
         _ (enc/write! bs nil pseq data)
         data (b/seal! bs)]
-    (t/is (= (seq data) [0 0 0 69]) true)))
+    (t/is (= (seq data) [69 0 0 0]) true)))
 
 (t/deftest process-i64
   (let [bs (b/create)
@@ -74,7 +74,7 @@
         data {"F1" 69}
         _ (enc/write! bs nil pseq data)
         data (b/seal! bs)]
-    (t/is (= (seq data) [0 0 0 0 0 0 0 69]) true)))
+    (t/is (= (seq data) [69 0 0 0 0 0 0 0]) true)))
 
 (t/deftest process-r32
   (let [bs (b/create)
