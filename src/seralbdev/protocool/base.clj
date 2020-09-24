@@ -1,8 +1,6 @@
 (ns seralbdev.protocool.base
   (:import (io.netty.buffer Unpooled)))
 
-(declare wrap-bytearrayLE)
-(declare wrap-bytearray)
 
 ;; INPUT INTERFACE
 ;;---------------------------------------------------------------------------------
@@ -43,37 +41,37 @@
 
 (defn read-int16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer}]
   (cond
-    (= m :LE) (.readShortLE b)
+    (= m :little) (.readShortLE b)
     :else (.readShort b)))
 
 (defn read-uint16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer}]
   (cond
-    (= m :LE) (.readUnsignedShortLE b)
+    (= m :little) (.readUnsignedShortLE b)
     :else (.readUnsignedShort b)))
 
 (defn read-int32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer}]
   (cond
-    (= m :LE) (.readIntLE b)
+    (= m :little) (.readIntLE b)
     :else (.readInt b)))
 
 (defn read-uint32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer}]
   (cond
-    (= m :LE) (.readUnsignedIntLE b)
+    (= m :little) (.readUnsignedIntLE b)
     :else (.readUnsignedInt b)))
 
 (defn read-int64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer}]
   (cond
-    (= m :LE) (.readLongLE b)
+    (= m :little) (.readLongLE b)
     :else (.readLong b)))
 
 (defn read-real32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer}]
   (cond
-    (= m :LE) (.readFloatLE b)
+    (= m :little) (.readFloatLE b)
     :else (.readFloat b)))
 
 (defn read-real64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer}]
   (cond
-    (= m :LE) (.readDoubleLE b)
+    (= m :little) (.readDoubleLE b)
     :else (.readDouble b)))
 
 (defn- read-array [array f]
@@ -95,49 +93,49 @@
 (defn read-ints16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (short-array count)]
     (cond
-      (= m :LE) (read-array ar #(.readShortLE b))
+      (= m :little) (read-array ar #(.readShortLE b))
       :else (read-array ar #(.readShort b)))
     ar))
 
 (defn read-uints16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (int-array count)]
     (cond
-      (= m :LE) (read-array ar #(.readUnsignedShortLE b))
+      (= m :little) (read-array ar #(.readUnsignedShortLE b))
       :else (read-array ar #(.readUnsignedShort b)))
     ar))
 
 (defn read-ints32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (int-array count)]
     (cond
-      (= m :LE) (read-array ar #(.readIntLE b))
+      (= m :little) (read-array ar #(.readIntLE b))
       :else (read-array ar #(.readInt b)))
     ar))
 
 (defn read-uints32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (long-array count)]
     (cond
-      (= m :LE) (read-array ar #(.readUnsignedIntLE b))
+      (= m :little) (read-array ar #(.readUnsignedIntLE b))
       :else (read-array ar #(.readUnsignedInt b)))
     ar))
 
 (defn read-ints64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (long-array count)]
     (cond
-      (= m :LE) (read-array ar #(.readLongtLE b))
+      (= m :little) (read-array ar #(.readLongtLE b))
       :else (read-array ar #(.readLong b)))
     ar))
 
 (defn read-reals32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (float-array count)]
     (cond
-      (= m :LE) (read-array ar #(.readFloatLE b))
+      (= m :little) (read-array ar #(.readFloatLE b))
       :else (read-array ar #(.readFloat b)))
     ar))
 
 (defn read-reals64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} count]
   (let [ar (double-array count)]
     (cond
-      (= m :LE) (read-array ar #(.readDoubleLE b))
+      (= m :little) (read-array ar #(.readDoubleLE b))
       :else (read-array ar #(.readDouble b)))
     ar))
 
@@ -169,42 +167,42 @@
 
 (defn write-int16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} value]
   (cond
-    (= m :LE) (.writeShortLE b value)
+    (= m :little) (.writeShortLE b value)
     :else (.writeShort b value)))
 
 (defn set-int16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} index value]
   (cond
-    (= m :LE) (.setShortLE b index value)
+    (= m :little) (.setShortLE b index value)
     :else (.setShort b index value)))
 
 (defn write-int32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} value]
   (cond
-    (= m :LE) (.writeIntLE b value)
+    (= m :little) (.writeIntLE b value)
     :else (.writeInt b value)))
 
 (defn set-int32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} index value]
   (cond
-    (= m :LE) (.setIntLE b index value)
+    (= m :little) (.setIntLE b index value)
     :else (.setInt b index value)))
 
 (defn write-int64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} value]
   (cond
-    (= m :LE) (.writeLongLE b value)
+    (= m :little) (.writeLongLE b value)
     :else (.writeLong b value)))
 
 (defn set-int64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} index value]
   (cond
-    (= m :LE) (.setLongLE b index value)
+    (= m :little) (.setLongLE b index value)
     :else (.setLong b index value)))
 
 (defn write-real32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} value]
   (cond
-    (= m :LE) (.writeFloatLE b (float value))
+    (= m :little) (.writeFloatLE b (float value))
     :else (.writeFloat b (float value))))
 
 (defn write-real64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} value]
   (cond
-    (= m :LE) (.writeDoubleLE b (double value))
+    (= m :little) (.writeDoubleLE b (double value))
     :else (.writeDouble b (double value))))
 
 (defn- write-array [values f]
@@ -212,27 +210,27 @@
 
 (defn write-ints16! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} values]
   (cond
-    (= m :LE) (write-array values #(.writeShortLE b %))
+    (= m :little) (write-array values #(.writeShortLE b %))
     :else (write-array values #(.writeShort b %))))
 
 (defn write-ints32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} values]
   (cond
-    (= m :LE) (write-array values #(.writeIntLE b %))
+    (= m :little) (write-array values #(.writeIntLE b %))
     :else (write-array values #(.writeInt b %))))
 
 (defn write-ints64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} values]
   (cond
-    (= m :LE) (write-array values #(.writeLongLE b %))
+    (= m :little) (write-array values #(.writeLongLE b %))
     :else (write-array values #(.writeLong b %))))
 
 (defn write-reals32! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} values]
   (cond
-    (= m :LE) (write-array values #(.writeFloatLE b %))
+    (= m :little) (write-array values #(.writeFloatLE b %))
     :else (write-array values #(.writeFloat b %))))
 
 (defn write-reals64! [{m :mode ^io.netty.buffer.ByteBuf b :buffer} values]
   (cond
-    (= m :LE) (write-array values #(.writeDoubleLE b %))
+    (= m :little) (write-array values #(.writeDoubleLE b %))
     :else (write-array values #(.writeDouble b %))))
 
 
@@ -243,23 +241,25 @@
   "Creates a stream that wraps an existing
   byte array in LE mode"
   [values]
-  {:mode :LE :buffer (Unpooled/wrappedBuffer values)})
+  (if (= values nil) nil
+    {:mode :little :buffer (Unpooled/wrappedBuffer values)}))
 
 (defn wrap-bytearrayBE
   "Creates a stream that wraps an existing
   byte array in BE mode"
   [values]
-  {:mode :BE :buffer (Unpooled/wrappedBuffer values)})
+  (if (= values nil) nil
+    {:mode :big :buffer (Unpooled/wrappedBuffer values)}))
 
 (defn create
   "Creates an empty stream in Little Endian mode"
   []
-  {:mode :LE :buffer (Unpooled/buffer)})
+  {:mode :little :buffer (Unpooled/buffer)})
 
 (defn createBE
   "Creates an empty stream in Big Endian mode"
   []
-  {:mode :BE :buffer (Unpooled/buffer)})
+  {:mode :big :buffer (Unpooled/buffer)})
 
 (defn seal!
   "Seals this stream and
@@ -272,7 +272,13 @@
   "Returns a new (empty) stream with the same
   configuration as this one
   source: stream"
-  [source]
-  (let [mode (:mode source)]
-    (if (= mode :LE) (create)
+  [stream]
+  (let [mode (:mode stream)]
+    (if (= mode :little) (create)
         (createBE))))
+
+(defn endianess
+  "Returns the endianess of this stream :litte|:big"
+  [stream]
+  (:mode stream))
+ 
