@@ -342,7 +342,6 @@
         (= m :little) (write-array values #(.writeDoubleLE b %))
         :else (write-array values #(.writeDouble b %))))))
 
-
 ;; STREAM INTERFACE
 ;; -----------------------------------------
 
@@ -394,3 +393,15 @@
   [stream]
   (when stream
     (:mode stream)))
+
+;; MISC INTERFACE
+;; -----------------------------------------
+
+(defn append!
+  "Appends the source stream to this stream
+  The src-stream is sealed afterwards"
+  [stream src-stream]
+  (let [srcdata (seal! src-stream)
+        sdlen (alength srcdata)]
+    (write-bytes! stream srcdata 0 sdlen)))
+
