@@ -105,9 +105,8 @@
   (let [[fid ftype fmeta] item
         rank (::d/rank fmeta)]
     (if (nil? rank) {fid (dispatch-single! stream resolver ftype fmeta)} ;;data is a single value
-        (let [pfx (::d/pfx fmeta)
-              pfxlen (read-prefix! stream pfx)
-              count (or pfxlen rank)];;data is a vector
+        (let [pfxlen (read-prefix! stream rank) ;;data is vector
+              count (or pfxlen rank)]
           {fid (into [] (dispatch-vector! stream resolver count ftype fmeta))}))))
 
 (defn read! [stream resolver pseq]

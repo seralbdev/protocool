@@ -57,6 +57,45 @@
         f22 (get (nth vdata 1) "F12")]
     (t/is (and (= f11 true) (= f12 66) (= f21 false) (= f22 33)))))
 
+(t/deftest process-pseq-vector2
+  (let [bs (b/create)
+        _ (b/write-byte! bs 2)
+        _ (b/write-byte! bs 2)
+        _ (b/write-int16! bs 0)
+
+        _ (b/write-int16! bs 11)
+        _ (b/write-bytes! bs (.getBytes "thetoken001") 0 11)
+
+        _ (b/write-int16! bs 7)
+        _ (b/write-bytes! bs (.getBytes "sensor1") 0 7)
+
+        _ (b/write-int16! bs 2) ;;array count
+
+        _ (b/write-int16! bs 2)
+        _ (b/write-bytes! bs (.getBytes "s1") 0 2)
+        _ (b/write-real32! bs 111)
+        _ (b/write-int64! bs 222)
+
+        _ (b/write-int16! bs 2)
+        _ (b/write-bytes! bs (.getBytes "s2") 0 2)
+        _ (b/write-real32! bs 333)
+        _ (b/write-int64! bs 444)
+
+        pseq [["fid" ::d/u8] 
+              ["sid" ::d/u8] 
+              ["res" ::d/u16] 
+              ["token" ::d/str {::d/pfx ::d/u16}] 
+              ["sensor" ::d/str {::d/pfx ::d/u16}] 
+              ["samples" ::d/pseq {::d/rank ::d/u16, ::d/fields [["n" ::d/str {::d/pfx ::d/u16}]["v" ::d/r32]["t" ::d/i64]]}]]
+        data (dc/read! bs nil pseq)
+        samples (get data "samples")
+        sample1 (nth samples 0)
+        sample2 (nth samples 1)
+        sample1-n (get sample1 "n")
+        sample2-n (get sample2 "n")]
+    (t/is (and (= sample1-n "s1") (= sample2-n "s2")))))
+
+
 (t/deftest process-psref1
   (let [bs (b/create)
         resolver (fn [_] [["F11" ::d/bool] ["F12" ::d/i16]])
@@ -67,7 +106,7 @@
         data (dc/read! bs resolver pseq)
         f11 (get-in data ["F1" "F11"])
         f12 (get-in data ["F1" "F12"])]
-    (t/is (and (= f11 true) (= f12 66)))))
+    (t/is (and (= f11 true) (= f12 66))))) 
 
 (t/deftest process-psref-vector1
   (let [bs (b/create)
