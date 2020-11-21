@@ -1,3 +1,5 @@
+![](doc/protologo.png)
+
 # PROTOC00L
 
 _A cool library to work with binary data in Clojure_
@@ -232,7 +234,7 @@ Reading a sequence from a stream
         resolver (fn [id] {})]
     (dec/read! stream resolver pseq)) ;; => {"userid" "user1" "addresses" ["home1" "home2"]}
 ```
-Writing data following a sequence in a stream
+Writing data matching a sequence into a stream
 
 ```clj
 (:require [seralbdev.protocool.pseq :as d]
@@ -245,7 +247,21 @@ Writing data following a sequence in a stream
     (dec/write! stream resolver pseq data))
 ```
 
+Reading a sequence from a stream. The data that comes after the usedid is not know at design time. The type of sequence is prefixed to the data in the form of a prefix string with a length encoded in one byte. The resolver function will receive the id and will return the right sequence for the data to be decoded
 
+```clj
+(:require [seralbdev.protocool.pseq :as d]
+          [seralbdev.protocool.pseq_decoder :as dec])
+
+(defn resolver [id]
+  (cond
+    (= id "UDT1") [["F1" ::d/i16]["F2" ::d/bool]]
+    (= id "UDT2") [["F3" ::d/str]["F4" ::d/r32]]))
+
+(defn deserialize [stream])
+  (let [pseq [["userid" ::d/u32]["data" ::d/psref {::d/pfx ::d/u8}]]
+    (dec/read! stream resolver pseq)) ;; => {"userid" "user1" "addresses" ["home1" "home2"]}
+```
 
 ### Sequence examples
 
