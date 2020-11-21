@@ -9,14 +9,12 @@ Its development started by the need of interacting with industrial devices using
 
 ## Protoc00l low level functions
 
-------
 The **base** namespace defines the low level mutable byte stream abstraction. Functions here are "wrapping" a Java unpooled netty buffer
 A protoc00l stream contains the raw byte sequence and its endianess
 This namespace offers functions for creating streams and reading and writing data
 
 ## Protoc00l sequences
 
-------
 Two devices exchange information following a protocol. A protocol defines the possible set of tokens plus the sequence\
 In this library a protocol is defined by a protoc00l sequece (pseq)\
 The possible tokens are defined in the **pseq** namespace. Functions for encoding and decoding are available in **pseq-encoder** and **pseq-decoder** namespaces
@@ -291,3 +289,5 @@ Copyright © 2020 Alberto Serrano Alonso
 This program and the accompanying materials are made available under the
 terms of the Creative Commons Attribution-ShareAlike 3.0 Unported License which is available at
 https://creativecommons.org/licenses/by-sa/3.0/
+
+![](https://licensebuttons.net/l/by-sa/3.0/88x31.png)
