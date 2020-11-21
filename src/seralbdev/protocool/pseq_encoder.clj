@@ -112,5 +112,12 @@
           (if (not= datalen speclen) (throw (Exception. "Array len do not match spec"))
               (dispatch-vector! stream resolver ftype fmeta value))))))
 
-(defn write! [stream resolver pseq data]
-    (run! #(dispatch-item! stream resolver % data) pseq))
+(defn write!
+  "Writes data following the pseq pattern in this protocool stream
+  This operation mutates the stream
+  stream: protocool stream
+  resolver: f[id]=>pseq (used for psrefs inside pseq)
+  pseq: protocool sequence defining the shape of data
+  data: data that conforms to this pseq"
+  [stream resolver pseq data]
+  (run! #(dispatch-item! stream resolver % data) pseq))

@@ -109,5 +109,13 @@
               count (or pfxlen rank)]
           {fid (into [] (dispatch-vector! stream resolver count ftype fmeta))}))))
 
-(defn read! [stream resolver pseq]
+(defn read!
+  "Reads data following the pseq pattern in this protocool stream
+  This operation mutates the stream
+  stream: protocool stream
+  resolver: f[id]=>pseq (used for psrefs inside pseq)
+  pseq: protocool sequence defining the shape of data
+  This function returns a vector with data conforming to pseq
+  and values according to the protocool stream"
+  [stream resolver pseq]
   (into {} (map #(dispatch-item! stream resolver %) pseq)))
