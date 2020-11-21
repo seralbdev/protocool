@@ -5,13 +5,22 @@ _A cool library to work with binary data in Clojure_
 Protoc00l library allows you to work with binary data at the right abstract level Clojure offers\
 Its development started by the need of interacting with industrial devices using Ethernet communications using arbitrary data sequences.
 
+## Protoc00l low level functions
+
+------
+The **base** namespace defines the low level mutable byte stream abstraction. Functions here are "wrapping" a Java unpooled netty buffer
+A protoc00l stream contains the raw byte sequence and its endianess
+This namespace offers functions for creating streams and reading and writing data
+
 ## Protoc00l sequences
 
+------
 Two devices exchange information following a protocol. A protocol defines the possible set of tokens plus the sequence\
-In this library this is a protoc00l sequece (pseq)\
+In this library a protocol is defined by a protoc00l sequece (pseq)\
+The possible tokens are defined in the **pseq** namespace. Functions for encoding and decoding are available in **pseq-encoder** and **pseq-decoder** namespaces
 
 A sequence is just a vector of fields\
-A field is vector defining the field-id, the field-type and optional metadata
+A field is, as well, a vector defining the field-id, the field-type and optional metadata
 
 ```clj
 [ ["field1-id" field-type metadata] ["field2-id" field-type metadata] ...]
@@ -43,15 +52,14 @@ Writing data to a protc00l stream will require a map of field => value pairs
 ;; => |12|"HiWorld!\0\0"|
 ```
 
-
-
-
 ### Field id
 
+------
 Each field must have a unique ID represented by an arbitrary String
 
 ### Field type
 
+------
 Protoc00l supports a number of types. They are represented by fully qualified keywords from pseq namespace
 
 |TYPE     |SIZE (bytes)|DESCRIPTION                              |
@@ -75,6 +83,7 @@ Protoc00l supports a number of types. They are represented by fully qualified ke
 
 ### Metadata
 
+------
 This is an optional part of field and it is defined as map
 
 Arrays
@@ -204,19 +213,65 @@ User must provide a resolver function that accepts a sequence id and returns a p
 
 > f[id] => [[..][..]...]
 
+&nbsp;
+&nbsp;
+
+### Usage examples
+
+------
+Let's see some usage examples
+
+Reading a sequence from a stream
+
+```clj
+(:require [seralbdev.protocool.pseq :as d]
+          [seralbdev.protocool.pseq_decoder :as dec])
+
+(defn deserialize [stream])
+  (let [pseq [["userid" ::d/u32]["addresses" ::d/str {::d/rank ::d/u8 ::d/pfx ::d/u16}]]
+        resolver (fn [id] {})]
+    (dec/read! stream resolver pseq)) ;; => {"userid" "user1" "addresses" ["home1" "home2"]}
+```
+Writing data following a sequence in a stream
+
+```clj
+(:require [seralbdev.protocool.pseq :as d]
+          [seralbdev.protocool.pseq_encoder :as enc])
+
+(defn serialize [stream])
+  (let [pseq [["userid" ::d/u32]["addresses" ::d/str {::d/rank ::d/u8 ::d/pfx ::d/u16}]]
+        data {"userid" "user1" "addresses" ["home1" "home2"]}
+        resolver (fn [id] {})]
+    (dec/write! stream resolver pseq data))
+```
 
 
-## License
 
-Copyright © 2020 FIXME
+### Sequence examples
+
+------
+Let's see some sequence examples
+
+```clj
+;; Sequence composed by a user id followed by a variable array of pre-fixed lenght strings
+;; the number of address items comes in a byte
+;; each address is a prefix length string of 2 bytes
+
+[["userid" ::u32]["addresses" ::str {::rank ::u8 ::pfx ::u16}]]
+```
+
+```clj
+;; Sequence composed by an user id followed by a variable array of embedded sequences
+;; each embedded sequence is composed by an arecode (2 byte integer) and an address (variable string)
+;; the number of items in an array is variable and comes as a prefix byte
+ 
+[["userid" ::u32]["addresses" ::pseq {::rank ::u8 ::fields [["areacode" ::u16]["address" ::str]]}]]
+```
+
+# License
+
+Copyright © 2020 Alberto Serrano Alonso
 
 This program and the accompanying materials are made available under the
-terms of the Eclipse Public License 2.0 which is available at
-http://www.eclipse.org/legal/epl-2.0.
-
-This Source Code may also be made available under the following Secondary
-Licenses when the conditions for such availability set forth in the Eclipse
-Public License, v. 2.0 are satisfied: GNU General Public License as published by
-the Free Software Foundation, either version 2 of the License, or (at your
-option) any later version, with the GNU Classpath Exception which is available
-at https://www.gnu.org/software/classpath/license.html.
+terms of the Creative Commons Attribution-ShareAlike 3.0 Unported License which is available at
+https://creativecommons.org/licenses/by-sa/3.0/
