@@ -5,12 +5,17 @@
 _A cool library to work with binary data in Clojure_
 
 Protoc00l library allows you to work with binary data at the right abstract level Clojure offers\
-Its development started by the need of interacting with industrial devices using Ethernet communications using arbitrary data sequences.
+Its development started by the need of interacting with industrial devices using Ethernet communications using arbitrary data sequences\
+There are some other similar libraries avaialable, probably more mature and with higher quality. But I am in the process of learning Clojure a nothing better than a real world requirement to challenge yourself ;)
+
+This is a high level overview of the concept
+
+![](doc/protohloverview.png)
 
 ## Protoc00l low level functions
 
-The **base** namespace defines the low level mutable byte stream abstraction. Functions here are "wrapping" a Java unpooled netty buffer
-A protoc00l stream contains the raw byte sequence and its endianess
+The **base** namespace defines the low level mutable byte stream abstraction. Functions here are "wrapping" a Java unpooled netty buffer\
+A protoc00l stream contains the raw byte sequence and its endianess\
 This namespace offers functions for creating streams and reading and writing data
 
 ## Protoc00l sequences
@@ -245,7 +250,7 @@ Writing data matching a sequence into a stream
     (dec/write! stream resolver pseq data))
 ```
 
-Reading a sequence from a stream. The data that comes after the usedid is not know at design time. The type of sequence is prefixed to the data in the form of a prefix string with a length encoded in one byte. The resolver function will receive the id and will return the right sequence for the data to be decoded
+Reading a sequence from a stream. The data that comes after the usedid is not know at design time. The type of sequence comes before the data in the form of a prefix string with a length encoded in one byte. The resolver function will receive the id and will return the right sequence for the data to be decoded
 
 ```clj
 (:require [seralbdev.protocool.pseq :as d]
@@ -280,6 +285,20 @@ Let's see some sequence examples
 ;; the number of items in an array is variable and comes as a prefix byte
  
 [["userid" ::u32]["addresses" ::pseq {::rank ::u8 ::fields [["areacode" ::u16]["address" ::str]]}]]
+```
+
+# Installation
+
+Lein can build and install the library in your local maven repository using the install option
+
+> lein install
+
+After that, it is a matter of adding the dependency in you project.clj file
+
+```clj
+:dependencies [ [org.clojure/clojure "1.10.1"]
+                ...
+                [seralbdev/protocool "0.1.1"]]
 ```
 
 # License
