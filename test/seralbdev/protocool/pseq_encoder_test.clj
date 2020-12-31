@@ -151,11 +151,8 @@
         _ (enc/write! bs resolver pseq data)
         data (b/seal! bs)
         rbs (b/wrap-bytearray data)
-        psidcnt (b/read-int16! rbs)
-        pseqid (String. (b/read-bytes! rbs psidcnt))
         f11 (b/read-byte! rbs)
         f12 (b/read-int16! rbs)]
-    (t/is (= pseqid "SEQ1"))
     (t/is (and (= f11 1) (= f12 33)))))
 
 (t/deftest process-psref-vector1
@@ -167,13 +164,10 @@
         data (b/seal! bs)
         rbs (b/wrap-bytearray data)
         rank (b/read-int16! rbs)
-        psidcnt (b/read-int16! rbs)
-        pseqid (String. (b/read-bytes! rbs psidcnt))
         f11-1 (b/read-byte! rbs)
         f12-1 (b/read-int16! rbs)
         f11-2 (b/read-byte! rbs)
         f12-2 (b/read-int16! rbs)]
     (t/is (= rank 2))
-    (t/is (= pseqid "SEQ1"))
     (t/is (and (= f11-1 1) (= f12-1 33)))
     (t/is (and (= f11-2 0) (= f12-2 66)))))
