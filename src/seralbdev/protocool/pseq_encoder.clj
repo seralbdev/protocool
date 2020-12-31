@@ -58,10 +58,9 @@
   "resolver: f(pseqid)->pseq
    fmeta: {::pfx ::i8|::i16|::i32}
    value: ['refid' [{'f1' value1 'f2' value2 ...} {} ...]"
-  [stream resolver fmeta value]
+  [stream resolver value]
   (let [[pseqid data] value
         reffmeta {::d/fields (resolver pseqid)}]
-    (process-str! stream fmeta pseqid) ;;write refid
     (process-pseq! stream resolver reffmeta data)))
 
 (defn- dispatch-single! [stream resolver ftype fmeta value]
@@ -76,15 +75,14 @@
     (= ftype ::d/bool) (process-bool! stream nil value)
     (= ftype ::d/padding) (process-padding! stream fmeta)
     (= ftype ::d/pseq) (process-pseq! stream resolver fmeta value)
-    (= ftype ::d/psref) (process-psref! stream resolver fmeta value)))
+    (= ftype ::d/psref) (process-psref! stream resolver value)))
 
 (defn- dispatch-psref-vector!
   "fmeta => {::pfx ix ::rank n ::fields [...]]}
   value => ['REFID' [{...}...{...}]]"
-  [stream resolver fmeta value]
+  [stream resolver value]
   (let [[pseqid fieldata] value
         reffmeta {::d/fields (resolver pseqid)}]
-    (process-str! stream fmeta pseqid)
     (run! #(process-pseq! stream resolver reffmeta %) fieldata)))
 
 (defn- dispatch-vector! [stream resolver ftype fmeta value]
@@ -98,7 +96,7 @@
     (= ftype ::d/str) (run! #(process-str! stream fmeta %) value)
     (= ftype ::d/bool) (run! #(process-bool! stream nil %) value)
     (= ftype ::d/pseq) (run! #(process-pseq! stream resolver fmeta %) value)
-    (= ftype ::d/psref) (dispatch-psref-vector! stream resolver fmeta value)))
+    (= ftype ::d/psref) (dispatch-psref-vector! stream resolver value)))
 
 (defn- dispatch-item! [stream resolver item data]
   (let [[fid ftype fmeta] item
