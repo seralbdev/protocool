@@ -56,11 +56,11 @@
 
 (defn- process-psref!
   "resolver: f(pseqid)->pseq
-   fmeta: {::pfx ::i8|::i16|::i32}
    value: ['refid' [{'f1' value1 'f2' value2 ...} {} ...]"
   [stream resolver value]
   (let [[pseqid data] value
         reffmeta {::d/fields (resolver pseqid)}]
+    (process-str! stream {::d/pfx ::d/u16 } pseqid)
     (process-pseq! stream resolver reffmeta data)))
 
 (defn- dispatch-single! [stream resolver ftype fmeta value]
@@ -83,6 +83,7 @@
   [stream resolver value]
   (let [[pseqid fieldata] value
         reffmeta {::d/fields (resolver pseqid)}]
+    (process-str! stream {::d/pfx ::d/u16 } pseqid)
     (run! #(process-pseq! stream resolver reffmeta %) fieldata)))
 
 (defn- dispatch-vector! [stream resolver ftype fmeta value]

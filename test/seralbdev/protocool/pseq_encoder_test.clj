@@ -151,6 +151,7 @@
         _ (enc/write! bs resolver pseq data)
         data (b/seal! bs)
         rbs (b/wrap-bytearray data)
+        psid (b/read-bytes! rbs 6)
         f11 (b/read-byte! rbs)
         f12 (b/read-int16! rbs)]
     (t/is (and (= f11 1) (= f12 33)))))
@@ -164,6 +165,7 @@
         data (b/seal! bs)
         rbs (b/wrap-bytearray data)
         rank (b/read-int16! rbs)
+        psid (b/read-bytes! rbs 6)
         f11-1 (b/read-byte! rbs)
         f12-1 (b/read-int16! rbs)
         f11-2 (b/read-byte! rbs)
