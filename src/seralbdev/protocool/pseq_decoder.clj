@@ -1,5 +1,6 @@
 (ns seralbdev.protocool.pseq_decoder
   (:require
+    [clojure.string]
     [seralbdev.protocool.base :as b]
     [seralbdev.protocool.pseq :as d]))
 
@@ -119,4 +120,7 @@
   This function returns a vector with data conforming to pseq
   and values according to the protocool stream"
   [stream resolver pseq]
-  (into {} (map #(dispatch-item! stream resolver %) pseq)))
+  (let [results (map #(dispatch-item! stream resolver %) pseq)
+        fres (filter #(not (clojure.string/blank? (key (first %)))) results)
+        fmap (into {} fres)]
+    fmap))
