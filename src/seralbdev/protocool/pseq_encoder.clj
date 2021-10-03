@@ -44,7 +44,9 @@
 
 (defn- process-bool! [stream _ data]
   (let [value (if data 1 0)]
-    (b/write-byte! stream value)))
+    (b/write-byte! stream value)
+    ;unused 2nd byte
+    (b/write-byte! stream 0)))
 
 (defn- process-padding! [stream fmeta]
   (let [padlen (::d/len fmeta)]

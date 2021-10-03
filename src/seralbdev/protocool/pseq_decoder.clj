@@ -49,6 +49,7 @@
 
 (defn- process-bool! [stream _]
   (let [value (b/read-byte! stream)
+        _ (b/read-byte! stream) ;discard 2nd byte
         tf (if (= value 0) false true)]
     tf))
 
