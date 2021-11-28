@@ -95,7 +95,7 @@
     (contains? #{::d/i32 ::d/u32} ftype) (b/write-ints32! stream value)
     (= ftype ::d/i64) (b/write-ints64! stream value)
     (= ftype ::d/r32) (b/write-reals32! stream value)
-    (= ftype ::d/r64) (b/write-reals64! stream)
+    (= ftype ::d/r64) (b/write-reals64! stream value)
     (= ftype ::d/str) (run! #(process-str! stream fmeta %) value)
     (= ftype ::d/bool) (run! #(process-bool! stream nil %) value)
     (= ftype ::d/pseq) (run! #(process-pseq! stream resolver fmeta %) value)
