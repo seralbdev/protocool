@@ -1,0 +1,11 @@
+{:paths ["src"]
+
+ :deps {org.clojure/clojure {:mvn/version "1.10.3"}
+        io.netty/netty-buffer {:mvn/version "4.1.42.Final"}}
+
+ :aliases {:test {:extra-paths ["test"]
+                  :extra-deps  {lambdaisland/kaocha {:mvn/version "1.60.945"}}
+                  :main-opts   ["-m" "kaocha.runner"]}
+                  
+ :build {:deps {io.github.clojure/tools.build {:git/tag "v0.6.8" :git/sha "d79ae84"}}
+         :ns-default build}}}
