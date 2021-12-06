@@ -168,14 +168,14 @@
         (= m :little) (read-array ar #(.readUnsignedIntLE b))
         :else (read-array ar #(.readUnsignedInt b)))
       ar)))
- 
+
 (defn read-ints64! [stream count]
   (when stream
     (let [^io.netty.buffer.ByteBuf b (:buffer stream)
           m (:mode stream)
           ar (long-array count)]
       (cond
-        (= m :little) (read-array ar #(.readLongtLE b))
+        (= m :little) (read-array ar #(.readLongLE b))
         :else (read-array ar #(.readLong b)))
       ar)))
 
@@ -404,4 +404,3 @@
   (let [srcdata (seal! src-stream)
         sdlen (alength srcdata)]
     (write-bytes! stream srcdata 0 sdlen)))
-
